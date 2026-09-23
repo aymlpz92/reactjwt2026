@@ -7,10 +7,9 @@ export const httpClient = axios.create({
 httpClient.interceptors.request.use(
   async (config) => {
     const token = localStorage.getItem('token')
-    if (token) {
+    if (token && config.url !== '/auth/login') {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log(`Request: ${config.method.toUpperCase()} ${config.url}`);
     return config;
   }
 );
@@ -18,15 +17,14 @@ httpClient.interceptors.request.use(
 httpClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    switch (error.status) {
+    switch (error.response?.status) {
       case 401:
-        console.log("Identifiants incorrects")
+        console.error("Identifiants incorrects")
         break;
       case 403:
-        console.log("Action interdite")
+        console.error("Action interdite")
         break;
-      default:
-        console.log("Erreur lors de l'authentification")
     }
+    return Promise.reject(error);
   }
 )

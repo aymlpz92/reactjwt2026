@@ -1,6 +1,6 @@
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useState} from 'react';
 import { useNavigate } from 'react-router';
-import { login } from "./auth.service";
+import {getRoles, hasRole, login, removeToken} from "./auth.service";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -10,11 +10,18 @@ export function LoginPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    removeToken();
 
     try {
-      await login({username, password});
+      const token = await login({username, password});
       console.log("connexion réussie");
-      navigate('/todos');
+      const role = getRoles(token);
+      const authorization = hasRole(role);
+      if (authorization) {
+        navigate('/todos');
+      } else {
+        alert("Vous n'avez pas les droits nécessaires")
+      }
     } catch (err) {
       console.error("connexion échoué", err);
     }
